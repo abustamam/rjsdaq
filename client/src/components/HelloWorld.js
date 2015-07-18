@@ -2,7 +2,12 @@ var React = require('react');
 
 var HelloWorld = React.createClass({
   render: function() {
-    // Return something renderable here
+    console.log(this.props)
+    return (
+      <h1>
+        Hello {this.props.name}!
+      </h1>
+    );
   },
 });
 
