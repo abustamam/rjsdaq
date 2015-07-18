@@ -1,6 +1,9 @@
 var React = require('react');
 var PriceAge = require('./PriceAge');
 
+var GRAPH_BAR_MARGIN = 5;
+var GRAPH_BAR_WIDTH = 18;
+
 var PropTypes = React.PropTypes;
 
 var Security = React.createClass({
@@ -19,7 +22,24 @@ var Security = React.createClass({
         ? []
         : [this.props.price],
       changePercent: null,
+      graphWidth: null,
     };
+  },
+
+  calculateGraphWidth: function() {
+    var graphElement = React.findDOMNode(this.refs.priceGraph);
+    this.setState({
+      graphWidth: graphElement.clientWidth,
+    })
+  },
+
+  componentDidMount: function(){
+    window.addEventListener('resize', this.calculateGraphWidth);
+    this.calculateGraphWidth();
+  },
+
+  componentWillUnmount: function() {
+    window.removeEventListener('resize', this.calculateGraphWidth);
   },
 
   componentWillReceiveProps: function(nextProps){
@@ -37,8 +57,16 @@ var Security = React.createClass({
   renderPriceBars: function() {
     var maxPrice;
     var minPrice;
+    var displayPrices;
+    var howManyBarsFit = Math.floor(
+      (this.state.graphWidth - GRAPH_BAR_MARGIN) /
+      (GRAPH_BAR_WIDTH + GRAPH_BAR_MARGIN)
+    );
 
-    this.state.priceHistory.forEach(function(price){
+    displayPrices = this.state.priceHistory.slice(-howManyBarsFit);
+
+
+    displayPrices.forEach(function(price){
       if (!maxPrice || price > maxPrice) {
         maxPrice = price;
       }
@@ -47,7 +75,7 @@ var Security = React.createClass({
       }
     })
 
-    return this.state.priceHistory.map(function(price){
+    return displayPrices.map(function(price){
       return this.renderPriceBar(price,minPrice,maxPrice);
     }.bind(this));
   },
@@ -90,7 +118,7 @@ var Security = React.createClass({
 
         <PriceAge price={this.props.price}/>
 
-        <ul className="quotes">
+        <ul className="quotes" ref="priceGraph">
           {this.renderPriceBars()}
         </ul>
 
