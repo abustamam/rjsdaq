@@ -1,31 +1,76 @@
 var React = require('react');
 var PriceAge = require('./PriceAge');
 
+var PropTypes = React.PropTypes;
+
 var Security = React.createClass({
-  // propTypes: {
-  //   name: PropTypes.string.isRequired,
-  //   price: PropTypes.number,
-  //   symbol: PropTypes.string.isRequired,
-  //   unitsHeld: PropTypes.number.isRequired,
-  // },
+  propTypes: {
+    name: PropTypes.string.isRequired,
+    price: PropTypes.number,
+    symbol: PropTypes.string.isRequired,
+    unitsHeld: PropTypes.number.isRequired,
+  },
 
   // SPECIAL METHODS
 
   getInitialState: function() {
     return {
+      priceHistory: this.props.price == null
+        ? []
+        : [this.props.price],
       changePercent: null,
     };
   },
 
   componentWillReceiveProps: function(nextProps){
-    var changePercent = (nextProps.price - this.props.price)/this.props.price;
-    this.setState({
-      changePercent: changePercent,
-    });
+    if (this.props.price != nextProps.price) {
+      var newPriceHistory = [].concat(this.state.priceHistory);
+      newPriceHistory.push(nextProps.price);
+      var changePercent = (nextProps.price - this.props.price)/this.props.price;
+      this.setState({
+        priceHistory: newPriceHistory,
+        changePercent: changePercent,
+      });
+    }
   },
 
-  render: function() {
-    console.log(this.props.name, this.state.changePercent);
+  renderPriceBars: function() {
+    var maxPrice;
+    var minPrice;
+
+    this.state.priceHistory.forEach(function(price){
+      if (!maxPrice || price > maxPrice) {
+        maxPrice = price;
+      }
+      if (!minPrice || price < minPrice) {
+        minPrice = price;
+      }
+    })
+
+    return this.state.priceHistory.map(function(price){
+      return this.renderPriceBar(price,minPrice,maxPrice);
+    }.bind(this));
+  },
+
+  renderPriceBar: function(price, minPrice, maxPrice) {
+    var delta = maxPrice - minPrice;
+    var percentHeight;
+
+    if (delta === 0) {
+      percentHeight = 100;
+    } else {
+      var percentHeight = 10 + (
+        (1 - ((maxPrice - price) / delta)) * 90
+      );
+    }
+    return (
+      <li style={{height: percentHeight + '%'}}>
+        {price}¢
+      </li>
+    )
+  },
+
+  renderChange: function(price){
     var classname = "";
     var sign = "";
     if (this.state.changePercent > 0) {
@@ -34,24 +79,24 @@ var Security = React.createClass({
     } else if (this.state.changePercent < 0) {
       classname = "decreasing";
     }
+    return <p className={"change " + classname}>{sign + Math.round( this.state.changePercent*100 * 10 ) / 10}%</p>
+  },
 
-
-    console.log(classname);
-
+  render: function() {
     return (
       <li>
         <h2>{this.props.name}<small>({this.props.symbol.toUpperCase()})</small></h2>
         <p className="price">{this.props.price}¢</p>
 
-        <PriceAge />
+        <PriceAge price={this.props.price}/>
 
         <ul className="quotes">
-          <li style={{height: '59.09%'}}>42¢</li>
+          {this.renderPriceBars()}
         </ul>
 
         <section className="analytics">
           <h3>Change</h3>
-          <p className={"change " + classname}>{sign + Math.round( this.state.changePercent*100 * 10 ) / 10}%</p>
+          {this.renderChange()}
 
           <h3>Trend</h3>
           <p className="trend decreasing">-36.5%</p>
