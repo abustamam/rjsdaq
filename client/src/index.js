@@ -8,9 +8,8 @@ var SERVER_PORT = 5000;
 // Connect to the server
 RJSDAQ.connect(SERVER_ADDRESS, SERVER_PORT, function(newData) {
   // This function will be called every time new data becomes available
-  console.log(newData);
   React.render(
-    <App/>,
+    <App securities={newData.securities}/>,
     document.body
   );
 });

@@ -4,7 +4,17 @@ var React = require('react');
 
 var App = React.createClass({
   render: function() {
-    console.log(this.props);
+    var securityElements = Object.keys(this.props.securities).map(function(symbol){
+      var security = this.props.securities[symbol];
+      return (
+        <Security
+          name={security.name}
+          symbol={symbol}
+          price={security.price}
+        />
+      );
+    }.bind(this));
+
     return (
       <div>
         <section className="console">
@@ -44,7 +54,7 @@ var App = React.createClass({
         </section>
 
         <ul id="securities">
-          <Security />
+          {securityElements}
         </ul>
       </div>
     );

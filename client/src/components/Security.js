@@ -3,10 +3,11 @@ var PriceAge = require('./PriceAge');
 
 var Security = React.createClass({
   render: function() {
+    console.log(this.props);
     return (
       <li>
-        <h2>Bunnies <small>(BNY)</small></h2>
-        <p className="price">33¢</p>
+        <h2>{this.props.name}<small>({this.props.symbol.toUpperCase()})</small></h2>
+        <p className="price">{this.props.price}¢</p>
 
         <PriceAge />
 
